@@ -1,4 +1,6 @@
 import javax.swing.*;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -7,17 +9,19 @@ import java.awt.event.KeyListener;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
 
-public class Canva extends JFrame implements ActionListener, KeyListener {
+public class Canva extends JFrame implements ActionListener, KeyListener, ChangeListener {
 
     private JButton paint_button, color_button;
-    private JLabel paint_label, color_label;
+    private JLabel paint_label, color_label, width_label, height_label;
     private JTextField paint_tfield;
+    private JSlider width_slider, height_slider;
     private JPanel canva_panel;
     private JScrollPane scroll_canva;
     private JComboBox fill_cBox;
     private Color currentColor = Color.BLACK,      //przypisujemy poczatkowe barwy
                   buttonColor = Color.PINK;
     private Font buttonFont = new Font("Dialog", Font.ITALIC, 14);      //czcionka do przycisków
+    private double width = 250, height = 100;
 
     public Canva(){
 
@@ -42,6 +46,7 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
         paint_label = new JLabel("Chosen Shape");           //tworzenie etykiety wybranej figury
         paint_label.setBounds(50, 675, 200, 50);
         paint_label.setForeground(currentColor);
+        paint_label.setFont(buttonFont);
         add(paint_label);
 
         paint_tfield = new JTextField();            //tworzenie pola tekstowego potrzebnego do keyListenera
@@ -61,15 +66,46 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
         color_label = new JLabel("Chosen Color Demostration");  //tworzenie etykiety demonstrującej wybrany kolor
         color_label.setBounds(250, 650, 200, 25);
         color_label.setForeground(currentColor);
+        color_label.setFont(buttonFont);
         add(color_label);
 
-        fill_cBox = new JComboBox();
+        fill_cBox = new JComboBox();            //tworzenie comboBoxu z dwiema możliwościami
         fill_cBox.setBounds(450, 575, 75, 50);
         fill_cBox.setFont(buttonFont);
         fill_cBox.setBackground(buttonColor);
-        fill_cBox.addItem("Not fill");
-        fill_cBox.addItem("Fill");
+        fill_cBox.addItem("Not fill");              //pierwsza zakładka będzie aktywna od początku działania programu
+        fill_cBox.addItem("Fill");                  //dodanie zakładki/możliwości
         add(fill_cBox);
+
+        width_label = new JLabel("Shape Width");
+        width_label.setBounds(750, 550, 100, 50);
+        width_label.setFont(buttonFont);
+        add(width_label);
+
+        width_slider = new JSlider(0, 500, 250);    //(min, max, start) value
+        width_slider.setBounds(640, 600, 300, 50);
+        width_slider.setBackground(buttonColor);
+        width_slider.setMajorTickSpacing(50);        //wstawienie duzych kresek
+        width_slider.setMinorTickSpacing(10);        //wstawienie malych kresek
+        width_slider.setPaintTicks(true);            //wyswietlenie kresek
+        width_slider.setPaintLabels(true);           //wyswietlenie wartosci
+        add(width_slider);
+        width_slider.addChangeListener(this);
+
+        height_label = new JLabel("Shape Height");
+        height_label.setBounds(750, 650, 100, 50);
+        height_label.setFont(buttonFont);
+        add(height_label);
+
+        height_slider = new JSlider(0, 200, 100);
+        height_slider.setBounds(640, 700, 300, 50);
+        height_slider.setBackground(buttonColor);
+        height_slider.setMajorTickSpacing(20);
+        height_slider.setMinorTickSpacing(5);
+        height_slider.setPaintTicks(true);
+        height_slider.setPaintLabels(true);
+        add(height_slider);
+        height_slider.addChangeListener(this);
 
     }
 
@@ -105,7 +141,7 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
  //przypisanie graficznego kontekstu komponentu scroll_canva do zmiennej graphics poprzez rzutuowanie na typ Graphics2D
                 Graphics2D graphics = (Graphics2D) scroll_canva.getGraphics();
                 //prostokąt(wspolrzedna x, wspolrzedna y, szerokosc prostokata, wysokosc prostokata)
-                Rectangle2D rectangle = new Rectangle2D.Double(60, 60, 30,100);
+                Rectangle2D rectangle = new Rectangle2D.Double(60, 60, width, height);
                 graphics.setColor(currentColor);    //kolor grafiki
                 graphics.draw(rectangle);           //rysujemy grafike podaną w argumencie
                 paint_label.setText("Rectangle");
@@ -113,7 +149,7 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
 
             if(fill_cBox.getSelectedItem().toString().equals("Fill")) {
                 Graphics2D graphics = (Graphics2D) scroll_canva.getGraphics();
-                Rectangle2D rectangle = new Rectangle2D.Double(400, 400, 1000, 200);
+                Rectangle2D rectangle = new Rectangle2D.Double(400, 400, width, height);
                 graphics.setColor(currentColor);
                 graphics.fill(rectangle);
                 paint_label.setText("Rectangle");
@@ -123,7 +159,7 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
         if(e.getKeyChar() == 'E' || e.getKeyChar() == 'e') {
             if(fill_cBox.getSelectedItem().toString().equals("Not fill")) {
                 Graphics2D graphics = (Graphics2D) scroll_canva.getGraphics();
-                Ellipse2D ellipse = new Ellipse2D.Double(100, 100, 150, 100);
+                Ellipse2D ellipse = new Ellipse2D.Double(100, 100, width, height);
                 graphics.setColor(currentColor);
                 graphics.draw(ellipse);
                 paint_label.setText("Ellipse");
@@ -131,7 +167,7 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
 
             if(fill_cBox.getSelectedItem().toString().equals("Fill")) {
                 Graphics2D graphics = (Graphics2D) scroll_canva.getGraphics();
-                Ellipse2D ellipse = new Ellipse2D.Double(500, 300, 200, 60);
+                Ellipse2D ellipse = new Ellipse2D.Double(500, 300, width, height);
                 graphics.setColor(currentColor);
                 graphics.fill(ellipse);
                 paint_label.setText("Ellipse");
@@ -147,5 +183,11 @@ public class Canva extends JFrame implements ActionListener, KeyListener {
     @Override
     public void keyReleased(KeyEvent e) {
 
+    }
+
+    @Override
+    public void stateChanged(ChangeEvent e) {
+        width =  width_slider.getValue();
+        height = height_slider.getValue();
     }
 }
