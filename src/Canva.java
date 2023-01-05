@@ -8,15 +8,15 @@ import java.awt.geom.Rectangle2D;
 
 public class Canva extends JFrame implements ActionListener, KeyListener, ChangeListener, MouseListener {
 
-    private JButton paint_button, color_button;
-    private JLabel paint_label, color_label, width_label, height_label, xlabel, ylabel;
+    private JButton paintInf_button, color_button, bchosenColor, clear_button, back_button;
+    private JLabel paint_label, color_label, width_label, height_label, xlabel, ylabel, canva_label;
     private JTextField paint_tfield;
     private JSlider width_slider, height_slider;
     private JPanel canva_panel;
     private JScrollPane scroll_canva;
     private JComboBox fill_cBox;
     private Color currentColor = Color.BLACK,      //przypisujemy poczatkowe barwy
-                  buttonColor = Color.PINK;
+                  buttonColor = new Color(70, 90, 141);
     private Font buttonFont = new Font("Dialog", Font.ITALIC, 14);      //czcionka do przycisków
     private double width = 250, height = 100, x = 450, y = 200;
 
@@ -31,24 +31,46 @@ public class Canva extends JFrame implements ActionListener, KeyListener, Change
         scroll_canva = new JScrollPane(canva_panel);        //tworzenie kanwy z suwakami
         scroll_canva.setBounds(50, 50, 1100, 500);
         scroll_canva.setBackground(Color.white);
+        scroll_canva.createVerticalScrollBar();
+        scroll_canva.createHorizontalScrollBar();
         add(scroll_canva);
         scroll_canva.addMouseListener(this);
 
-        paint_button = new JButton("Paint Info");   //tworzenie przycisku ktory wyswietli instrukcje
-        paint_button.setBounds(50, 575, 100, 50);
-        paint_button.setFont(buttonFont);
-        paint_button.setBackground(buttonColor);
-        add(paint_button);
-        paint_button.addActionListener(this);
+        canva_label = new JLabel("Canva");
+        canva_label.setBounds(575, 10, 50, 25);
+        canva_label.setFont(buttonFont);
+        add(canva_label);
+
+        clear_button = new JButton("Clear");
+        clear_button.setBounds(900, 10, 100, 30);
+        clear_button.setToolTipText("Clear the canva!");
+        clear_button.setFont(buttonFont);
+        clear_button.setBackground(buttonColor);
+        add(clear_button);
+        clear_button.addActionListener(this);
+
+        back_button = new JButton("Back to menu");
+        back_button.setBounds(1010, 10, 150, 30);
+        back_button.setFont(buttonFont);
+        back_button.setBackground(buttonColor);
+        add(back_button);
+        back_button.addActionListener(this);
+
+        paintInf_button = new JButton("Paint Info");   //tworzenie przycisku ktory wyswietli instrukcje
+        paintInf_button.setBounds(50, 575, 100, 50);
+        paintInf_button.setFont(buttonFont);
+        paintInf_button.setBackground(buttonColor);
+        add(paintInf_button);
+        paintInf_button.addActionListener(this);
 
         paint_label = new JLabel("Chosen Shape");           //tworzenie etykiety wybranej figury
         paint_label.setBounds(50, 675, 200, 50);
-        paint_label.setForeground(currentColor);
         paint_label.setFont(buttonFont);
         add(paint_label);
 
         paint_tfield = new JTextField();            //tworzenie pola tekstowego potrzebnego do keyListenera
         paint_tfield.setBounds(50, 650, 50, 25);
+        paint_tfield.setBackground(new Color(100, 137, 160));
         paint_tfield.setToolTipText("Type the chosen letter here!");    //podpowiedz dla uzytkownika
         add(paint_tfield);
         paint_tfield.addKeyListener(this);
@@ -63,9 +85,14 @@ public class Canva extends JFrame implements ActionListener, KeyListener, Change
 
         color_label = new JLabel("Chosen Color Demostration");  //tworzenie etykiety demonstrującej wybrany kolor
         color_label.setBounds(250, 650, 200, 25);
-        color_label.setForeground(currentColor);
         color_label.setFont(buttonFont);
         add(color_label);
+
+        bchosenColor = new JButton();
+        bchosenColor.setBounds(310, 680, 50, 50);
+        bchosenColor.setBackground(currentColor);
+        bchosenColor.setToolTipText("Currently chosen color!");
+        add(bchosenColor);
 
         fill_cBox = new JComboBox();            //tworzenie comboBoxu z dwiema możliwościami
         fill_cBox.setBounds(450, 575, 75, 50);
@@ -107,11 +134,13 @@ public class Canva extends JFrame implements ActionListener, KeyListener, Change
 
         xlabel = new JLabel("X coordinate: " + x);
         xlabel.setBounds(1000, 600, 200, 50);
+        xlabel.setToolTipText("Click anywhere on the canva to choose coordinates!");
         xlabel.setFont(buttonFont);
         add(xlabel);
 
         ylabel = new JLabel("Y coordinate: " + y);
         ylabel.setBounds(1000, 700, 200, 50);
+        ylabel.setToolTipText("Click anywhere on the canva to choose coordinates!");
         ylabel.setFont(buttonFont);
         add(ylabel);
 
@@ -122,12 +151,15 @@ public class Canva extends JFrame implements ActionListener, KeyListener, Change
 
         Object source = e.getSource();
 
-        if(source == paint_button) {
+        if(source == paintInf_button) {
             JOptionPane.showMessageDialog(null,
-                                                "You're choosing a shape to draw: \n" +
-                                                        "-> type 'R' below to draw a rectangle \n" +
-                                                        "-> type 'E' below to draw an ellipse",
-                                                   "Paint Info",
+                                  "Steps: \n" +
+                                          "1) Choose a color, a width, a height and the coordinates of your future drawing \n" +
+                                          "    You can also change the figure filling (figure filled or not filled) \n" +
+                                          "2) You're choosing a shape to draw: \n" +
+                                          "     -> type 'R' below to draw a rectangle \n" +
+                                          "     -> type 'E' below to draw an ellipse",
+                                                   "Paint Info / how to paint",
                                                         JOptionPane.INFORMATION_MESSAGE);
 
         }
@@ -136,7 +168,18 @@ public class Canva extends JFrame implements ActionListener, KeyListener, Change
             //zmienna kolor przyjmuje barwę wybraną przez uzytkownika poprzez colorChooser
            Color color = JColorChooser.showDialog(null, "Choose a color!", Color.BLACK);
            currentColor = color;       //przypisujemy wybrana barwe do zmiennej current_color
-           color_label.setForeground(color);    //zmieniamy barwe etykiety na wybrana przez uzytkownika
+           bchosenColor.setBackground(color);    //zmieniamy barwe demonstacji na wybrana przez uzytkownika
+        }
+
+        else if(source == clear_button) {
+            scroll_canva.getGraphics().clearRect(0,0, 1100, 500);
+        }
+
+        else if(source == back_button) {
+            FirstWindow firstWindow = new FirstWindow();
+            firstWindow.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            firstWindow.setVisible(true);
+            dispose();
         }
 
     }
