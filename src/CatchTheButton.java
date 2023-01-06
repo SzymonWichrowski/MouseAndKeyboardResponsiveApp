@@ -17,7 +17,6 @@ public class CatchTheButton extends JFrame implements ActionListener {
             widthButton = 100, heightButton = 50,
             xButton, yButton,
             moves_count = 0;
-    private boolean caughtOrNot = false;
 
     public CatchTheButton() {
 
