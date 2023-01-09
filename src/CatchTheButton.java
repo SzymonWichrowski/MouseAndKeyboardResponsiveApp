@@ -9,14 +9,16 @@ public class CatchTheButton extends JFrame implements ActionListener {
     static int xPanel = 50, yPanel = 50;       //wspolrzedne okna Catch The Button
     static int panelWidth = frameWidth - 2 * xPanel, panelHeight = frameHeight * 3/4;   //wymiary okna Catch The Button
     private JPanel catch_panel;     //panel na którym będzie się poruszał przycisk
-    private JLabel title_label, moves_label, xlabel, ylabel;        //etykiety
+    private JLabel title_label, moves_label, xlabel, ylabel, time_label;    //etykiety
     private JButton catchInfo_button, back_button, start_button, theButton;     //przyciski
     private Color buttonsColor = new Color(50, 125, 50);        //kolor przycisków
     private Font font = new Font("Dialog", Font.ITALIC, 14);    //czcionka przycisków
     private int xStart = 550, yStart = 300,     //współrzędne początkowe przycisku 'Catch me'
             widthButton = 100, heightButton = 50,       //rozmiary przycisku
             xButton, yButton,   //zmienne przechowujące wartości współrzędnych przycisku 'Catch me' po jego relokacji
-            moves_count = 0;    //ilość relokacji
+            moves_count = 0,    //ilość relokacji
+            time_count = 0;     //licznik czasu
+    private Timer timer;
 
     public CatchTheButton() {
 
@@ -68,20 +70,28 @@ public class CatchTheButton extends JFrame implements ActionListener {
         theButton.addActionListener(this);
 
         xlabel = new JLabel("X coordinate: ");
-        xlabel.setBounds(650, 675, 200, 50);
+        xlabel.setBounds(400, 675, 200, 50);
         xlabel.setFont(font);
         add(xlabel);
 
         ylabel = new JLabel("Y coordinate: ");
-        ylabel.setBounds(800, 675, 200, 50);
+        ylabel.setBounds(550, 675, 200, 50);
         ylabel.setFont(font);
         add(ylabel);
 
-        moves_label = new JLabel("Caught in attempt number: " + moves_count);      //etykieta ilości relokacji
+        moves_label = new JLabel("");      //etykieta ilości relokacji
+        updateMoves();
         moves_label.setToolTipText("number of 'Catch me' button moves");
         moves_label.setFont(font);
-        moves_label.setBounds(400, 675, 200, 50);
+        moves_label.setBounds(850, 675, 200, 50);
         add(moves_label);
+
+        time_label = new JLabel();                                  //etykieta czasu
+        time_label.setBounds(700, 675, 100, 50);
+        updateTime();
+        time_label.setFont(font);
+        add(time_label);
+
     }
 
     @Override
@@ -101,7 +111,7 @@ public class CatchTheButton extends JFrame implements ActionListener {
                     "1) Click 'Start' button to activate 'Catch me' one \n" +
                             "2) Activated 'Catch me' button will change location with every click \n" +
                             "3) To actually catch the button it has to be located near the left or right field boundaries \n" +
-                            "4) Try to catch it with the lowest number of attempts. Good luck!", "",
+                            "4) Try to catch it in the shortest time. Good luck!", "",
                             JOptionPane.INFORMATION_MESSAGE);
         }
 
@@ -110,24 +120,39 @@ public class CatchTheButton extends JFrame implements ActionListener {
             movement();                     //poruszanie się przycisku
             moves_count = 1;
             updateMoves();
+            timer = new Timer(1000, this);  //inicjalizacja Timera (czas między wywołaniami timera, listener)
+            if(time_count == 0) {   //jeśli zaczynamy
+                timer.start();  //Timer startuje
+            } // jeśli próbujemy ponownie
+            else {
+                time_count = 0;
+                updateTime();
+                timer.restart();   //Timer wznawia działanie
+            }
         }
 
         if(source == theButton) {
             if(xButton < 75 || xButton > 1025) {    //warunek złapania przycisku
-                caught();
+                caught();      //co się dzieje kiedy przycisk zostanie złapany
             }
             else movement();
         }
+
+        //jeśli źródłem jest timer (możemy to zrobić ponieważ przy inicjalizacji Timera drugim argumentem jest this)
+        if(source == timer) {
+            time_count++;       //licznik rośnie
+            updateTime();
+        }   //polecenia w klamrach wykonują się co sekundę (pierwszy argument przy inicjalizacji Timera)
     }
 
-    public void randomCoordinates() {
+    public void randomCoordinates() {       //losujemy koordynaty i aktualizujemy etykiety
         xButton = (int) (Math.random() * (panelWidth - widthButton)) + xPanel;
         yButton = (int) (Math.random() * (panelHeight - heightButton)) + yPanel;
         xlabel.setText("Coordinate X: " + xButton);
         ylabel.setText("Coordinate Y: " + yButton);
     }
 
-    public void movement() {
+    public void movement() {    //'poruszanie' przycisku
         randomCoordinates();
         theButton.setBounds(xButton, yButton, widthButton, heightButton);
         add(theButton);
@@ -135,9 +160,11 @@ public class CatchTheButton extends JFrame implements ActionListener {
         updateMoves();
     }
 
-    public void caught() {
+    public void caught() {  //co się dzieje kiedy przycisk zostanie złapany
+        timer.stop();       //Timer się zatrzymuje
+        moves_label.setText("Caught in attempt number: " + moves_count);
         JOptionPane.showMessageDialog(null, "You caught the button in " +
-                                      moves_count + " attempt" +" \n" + "Congratulations!",
+                                      moves_count + " seconds" +" \n" + "Congratulations!",
                                  "Button Caught!", JOptionPane.PLAIN_MESSAGE);
         int valueOfAnswer = JOptionPane.showConfirmDialog(null, "Do you want to leave?", "", JOptionPane.YES_NO_OPTION);
         switch(valueOfAnswer) {
@@ -153,7 +180,11 @@ public class CatchTheButton extends JFrame implements ActionListener {
     }
 
     public void updateMoves() {
-        moves_label.setText("Caught in attempt number: " + moves_count);
+        moves_label.setText("Attempt number: " + moves_count);  //aktualizacja prób
+    }
+
+    public void updateTime() {
+        time_label.setText("Time: " + time_count + " s");  //aktualizacja etykiety
     }
 }
 
